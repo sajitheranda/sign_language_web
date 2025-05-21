@@ -1,0 +1,14 @@
+## setup env
+python -m venv venv
+
+## active env
+venv\Scripts\activate
+
+## deactive
+deactivate
+
+## create requirements file
+pip freeze > requirements.txt
+
+## python version
+Python 3.10.0

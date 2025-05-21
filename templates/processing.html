@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="processing-container">
+    <h2>Processing Your Video</h2>
+    <div class="progress-info">
+        <p>Processing: <strong>{{ video_name }}</strong></p>
+        <p>{{ frame_count }} frames have been successfully extracted.</p>
+
+        <div class="progress-container">
+            <progress id="processingProgress" value="0" max="100"></progress>
+            <span id="processingProgressText">0%</span>
+        </div>
+
+        <p id="statusMessage">Starting analysis...</p>
+    </div>
+
+    <div id="resultsContainer" style="display: none;">
+        <h3>Keypoint Extraction Complete!</h3>
+        <a href="{{ url_for('results') }}" class="btn">View Results</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBar = document.getElementById('processingProgress');
+        const progressText = document.getElementById('processingProgressText');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        let progress = 0;
+        const steps = [
+            {progress: 20, message: "Reading video file..."},
+            {progress: 40, message: "Extracting frames..."},
+            {progress: 70, message: "Detecting body keypoints..."},
+            {progress: 100, message: "Finalizing results..."}
+        ];
+
+        let currentStep = 0;
+
+        function updateProgress() {
+            if (currentStep < steps.length) {
+                const step = steps[currentStep];
+                progress = step.progress;
+                progressBar.value = progress;
+                progressText.textContent = `${progress}%`;
+                statusMessage.textContent = step.message;
+                currentStep++;
+
+                const delay = 1000 + Math.random() * 1000;
+                setTimeout(updateProgress, delay);
+            } else {
+                statusMessage.textContent = "Keypoint analysis complete!";
+                resultsContainer.style.display = 'block';
+            }
+        }
+
+        setTimeout(updateProgress, 1000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="upload-container">
+    <h2>Upload Sign Language Video</h2>
+    <form method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+        <div class="form-group">
+            <label for="video">Select video file (MP4, AVI, MOV, MKV):</label>
+            <div class="drop-area" id="dropArea">
+                <span class="drop-message">Drag & drop your video file here</span>
+                <span class="drop-or">or</span>
+                <input type="file" id="video" name="video" accept="video/*" required>
+            </div>
+        </div>
+        <button type="submit" class="btn" id="submitBtn">Upload</button>
+    </form>
+
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        <div class="spinner"></div>
+        <p>Uploading your video, please wait...</p>
+        <div class="progress-container">
+            <progress id="progressBar" value="0" max="100"></progress>
+            <span id="progressText">0%</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('video');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.classList.add('highlight');
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.classList.remove('highlight');
+    });
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+            fileInput.files = files;
+            dropArea.querySelector('.drop-message').textContent = files[0].name;
+        }
+    }
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length) {
+            dropArea.querySelector('.drop-message').textContent = this.files[0].name;
+        }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        submitBtn.disabled = true;
+        loadingIndicator.style.display = 'block';
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                progressBar.value = percentComplete;
+                progressText.textContent = `${percentComplete}% (Uploading)`;
+            }
+        });
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                window.location.href = "{{ url_for('processing') }}";
+            } else if (xhr.readyState === 4 && xhr.status !== 200) {
+                alert('Upload failed');
+                submitBtn.disabled = false;
+                loadingIndicator.style.display = 'none';
+            }
+        };
+
+        xhr.open('POST', form.action, true);
+        xhr.send(formData);
+    });
+</script>
+{% endblock %}
