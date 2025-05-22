@@ -8,7 +8,7 @@ from keypoint_model_load import wholebody
 from config import Config
 import json
 from flask import send_file
-
+from pyngrok import ngrok
 
 
 app = Flask(__name__)
@@ -181,4 +181,13 @@ def cleanup():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    # Set your ngrok auth token (only needs to be done once per runtime)
+    ngrok.set_auth_token("2xOLBPcSEHDtC7wUqTmy3xGiqwK_2zprxCpK5w1aj43KwpVvQ")  # Replace with your token
+
+    # Open ngrok tunnel
+    public_url = ngrok.connect(5000)
+    print(f"🌐 Public URL: {public_url}")
+
+    # Start Flask app
+    app.run(port=5000, debug=True)
