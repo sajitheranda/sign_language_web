@@ -183,7 +183,7 @@ def cleanup():
 if __name__ == '__main__':
     # app.run(debug=True)
     # Set your ngrok auth token (only needs to be done once per runtime)
-    ngrok.set_auth_token("2xOLBPcSEHDtC7wUqTmy3xGiqwK_2zprxCpK5w1aj43KwpVvQ")  # Replace with your token
+    ngrok.set_auth_token("2xRl6OymUUW4upwFavFMbIZ3Fqk_6FxHPfAFc6912kUHeSfnr")  # Replace with your token
 
     # Open ngrok tunnel
     public_url = ngrok.connect(5000)
