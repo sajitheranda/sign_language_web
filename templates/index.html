@@ -14,7 +14,17 @@
                     <input type="file" id="video" name="video" accept="video/*" required>
                 </div>
             </div>
-            <button type="submit" class="btn" id="submitBtn">Upload</button>
+
+            <div class="form-group">
+                <label for="operation_type">Select Operation Type:</label>
+                <select name="operation_type" id="operation_type" required>
+                    <option value="classification">Classification</option>
+                    <option value="translation">Translation</option>
+                </select>
+            </div>
+            <br>
+
+            <button type="submit" class="btn" id="submitBtn">Result</button>
         </form>
     </div>
 
@@ -288,18 +298,18 @@
         function startProcessing(data) {
             loadingIndicator.style.display = 'none';
             processingSection.style.display = 'block';
-            uploadCompleteSection.style.display = 'block';
-            keypointExtractionSection.style.display = 'block';
-            resultGenerationSection.style.display = 'block';
+            // uploadCompleteSection.style.display = 'block';
+            // keypointExtractionSection.style.display = 'block';
+            //resultGenerationSection.style.display = 'block';
             
             processingVideoName.textContent = data.video_name;
             frameCountText.textContent = `${data.frame_count} frames extracted.`;
 
             // Show keypoint extraction section after a short delay
-            setTimeout(() => {
-                keypointExtractionSection.style.display = 'block';
-                simulateKeypointExtraction();
-            }, 1500);
+            // setTimeout(() => {
+            //     keypointExtractionSection.style.display = 'block';
+            //     simulateKeypointExtraction();
+            // }, 1500);
         }
 
         function simulateKeypointExtraction() {
@@ -465,6 +475,35 @@
         margin: 5px 0;
         font-size: 14px;
         color: #666;
+    }
+
+    .form-group label {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 8px;
+    display: block;
+    color: #333;
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #fff;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg width='14' height='10' viewBox='0 0 14 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10L0.0717968 0.5L13.9282 0.5L7 10Z' fill='%23666'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        cursor: pointer;
+        transition: border-color 0.3s;
+    }
+
+    .form-group select:focus {
+        border-color: #007bff;
+        outline: none;
     }
 </style>
 {% endblock %}

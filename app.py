@@ -4,8 +4,8 @@ import cv2
 import tempfile
 import shutil
 from werkzeug.utils import secure_filename
+from keypoint_model_load import wholebody
 from config import Config
-from rtmlib import Wholebody
 import json
 from flask import send_file
 
@@ -16,8 +16,6 @@ app.config.from_object(Config)
 
 os.makedirs(app.config['TEMP_FOLDER'], exist_ok=True)
 
-# ✅ Initialize once
-wholebody = Wholebody()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -52,6 +50,8 @@ def index():
             return redirect(request.url)
 
         file = request.files['video']
+        operation_type = request.form['operation_type']
+        print("*** ",operation_type)
         if file.filename == '':
             flash('No video selected')
             return redirect(request.url)

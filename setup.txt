@@ -12,3 +12,6 @@ pip freeze > requirements.txt
 
 ## python version
 Python 3.10.0
+
+## run application
+python app.py
