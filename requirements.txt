@@ -106,3 +106,4 @@ traitlets
 typing_extensions
 wcwidth
 Werkzeug
+pyngrok
