@@ -4,4 +4,6 @@ venv/
 
 temp/
 
-models/Keypoints_models/
+models/Keypoints_models/rtmw-x_simcc-cocktail13_pt-ucoco_270e-384x288-0949e3a9_20230925
+
+models/Keypoints_models/yolox_x_8xb8-300e_humanart-a39d44ed
