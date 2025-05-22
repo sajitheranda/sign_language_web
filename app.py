@@ -8,7 +8,10 @@ from keypoint_model_load import wholebody
 from config import Config
 import json
 from flask import send_file
+from operations import flattern
 from pyngrok import ngrok
+from result_gen import send_classification , send_translation
+import torch
 
 
 app = Flask(__name__)
@@ -66,7 +69,8 @@ def index():
             processing_data = {
                 'temp_dir': temp_dir,
                 'video_path': video_path,
-                'video_name': filename
+                'video_name': filename,
+                'operation_type' : operation_type
             }
             
             # Step 1: Extract frames
@@ -83,14 +87,34 @@ def index():
                 image_path = os.path.join(temp_dir, image)
                 img = cv2.imread(image_path)
                 keypoints, scores = wholebody(img)
+                keypoints=keypoints[0]
                 video_keypoints.append(keypoints.tolist())
 
+            video_keypoints=flattern(video_keypoints)
+            print(len(video_keypoints))
             # Save keypoints
-            keypoint_path = os.path.join(temp_dir, 'keypoints.json')
-            with open(keypoint_path, 'w') as f:
-                json.dump(video_keypoints, f)
+            # keypoint_path = os.path.join(temp_dir, 'keypoints.json')
+
+            keypoint_path = os.path.join(temp_dir, 'keypoints.pt')
+
+            # Save the tensor
+            torch.save(video_keypoints, keypoint_path)
+            # with open(keypoint_path, 'w') as f:
+            #     json.dump(video_keypoints, f)
+            print("tensor save successful")
+            # torch.save(video_keypoints, 'filtered_keypoints.pt')
+
+            video_keypoints = video_keypoints.tolist()[:40]
+
+            if operation_type == "classification":
+                result_data =send_classification(video_keypoints)
+            else:
+                result_data=send_translation(video_keypoints)
+
+            print(result_data)
 
             processing_data['keypoint_path'] = keypoint_path
+            processing_data['result_data'] = result_data
             session['processing_data'] = processing_data
             
             return jsonify({
@@ -104,6 +128,8 @@ def index():
         processing_data = session['processing_data']
         return render_template('index.html', 
                              processing_complete=True,
+                             result_data = processing_data['result_data'],
+                             operation_type=processing_data['operation_type'],
                              video_name=processing_data['video_name'],
                              frame_count=len(processing_data['frames']))
     
@@ -181,13 +207,13 @@ def cleanup():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    # app.run(debug=True)
+    app.run(debug=True)
     # Set your ngrok auth token (only needs to be done once per runtime)
-    ngrok.set_auth_token("2xRoQceut1EqOlv0mRHDz6gwRtp_66KghwXkAuYmWjSXQNshN")  # Replace with your token
+    # ngrok.set_auth_token("2xRoQceut1EqOlv0mRHDz6gwRtp_66KghwXkAuYmWjSXQNshN")  # Replace with your token
 
-    # Open ngrok tunnel
-    public_url = ngrok.connect(5000)
-    print(f"🌐 Public URL: {public_url}")
+    # # Open ngrok tunnel
+    # public_url = ngrok.connect(5000)
+    # print(f"🌐 Public URL: {public_url}")
 
-    # Start Flask app
-    app.run(port=5000, debug=True)
+    # # Start Flask app
+    # app.run(port=5000, debug=True)

@@ -54,45 +54,59 @@
     <div id="processingSection" class="processing-container" style="display: {% if processing_complete %}block{% else %}none{% endif %};">
         <h2>{% if processing_complete %}Analysis Complete{% else %}Processing Your Video{% endif %}</h2>
         <div class="progress-info">
-            {% if processing_complete %}
-                <p>Processed: <strong>{{ video_name }}</strong></p>
-                <p>{{ frame_count }} frames analyzed.</p>
+            {% if operation_type == "classification" %}
+                <h3>Classification Results</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, value in result_data.items() %}
+                            <tr>
+                                <td>{{ value[0] }}</td>
+                                <td>{{ '%.2f'|format(value[1] * 100) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% else %}
-                <p>Processing: <strong id="processingVideoName"></strong></p>
-                <p id="frameCountText"></p>
+                <h3>Translation Result</h3>
+                <p>{{ result_data.text }}</p>
             {% endif %}
-
+    
             <!-- Upload Complete Section -->
-            <div id="uploadCompleteSection" style="display: none;">
+            <!-- <div id="uploadCompleteSection" style="display: none;">
                 <h3>Upload Complete</h3>
                 <div class="progress-container">
                     <progress value="100" max="100"></progress>
                     <span>100%</span>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Keypoint Extraction Section -->
-            <div id="keypointExtractionSection" style="display: none; margin-top: 20px;">
+            <!-- <div id="keypointExtractionSection" style="display: none; margin-top: 20px;">
                 <h3>Extracting Keypoints</h3>
                 <div class="progress-container">
                     <progress id="keypointProgress" value="100" max="100"></progress>
                     <span id="keypointProgressText">100%</span>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Result Generation Section -->
-            <div id="resultGenerationSection" style="display: none; margin-top: 20px;">
+            <!-- <div id="resultGenerationSection" style="display: none; margin-top: 20px;">
                 <h3>Generating Results</h3>
                 <div class="progress-container">
                     <progress id="resultProgress" value="100" max="100"></progress>
                     <span id="resultProgressText">100%</span>
                 </div>
-            </div>
+            </div> -->
 
             <div id="resultsContainer" style="display: {% if processing_complete %}block{% else %}none{% endif %}; margin-top: 20px;">
-                <h3>Analysis Complete!</h3>
                 <div class="action-buttons">
-                    <a href="{{ url_for('results') }}" class="btn">View Results</a>
+                    <!-- <a href="{{ url_for('results') }}" class="btn">View Results</a> -->
                     <button id="newUploadBtn" class="btn">Upload New Video</button>
                 </div>
             </div>
@@ -301,6 +315,7 @@
             // uploadCompleteSection.style.display = 'block';
             // keypointExtractionSection.style.display = 'block';
             //resultGenerationSection.style.display = 'block';
+            resultsContainer.style.display = 'block';
             
             processingVideoName.textContent = data.video_name;
             frameCountText.textContent = `${data.frame_count} frames extracted.`;
@@ -504,6 +519,60 @@
     .form-group select:focus {
         border-color: #007bff;
         outline: none;
+    }
+
+    .results-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+    }
+
+    h3 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    p {
+        font-size: 18px;
+        text-align: center;
+        color: #444;
+        background-color: #eef2f7;
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #4a90e2;
+        color: white;
+        border-radius: 8px 8px 0 0;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #e1ecf4;
+    }
+
+    td:last-child {
+        font-weight: bold;
+        color: #333;
     }
 </style>
 {% endblock %}
