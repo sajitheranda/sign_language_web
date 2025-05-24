@@ -53,28 +53,47 @@
     <!-- Processing Section -->
     <div id="processingSection" class="processing-container" style="display: {% if processing_complete %}block{% else %}none{% endif %};">
         <h2>{% if processing_complete %}Analysis Complete{% else %}Processing Your Video{% endif %}</h2>
-        <div class="progress-info">
-            {% if operation_type == "classification" %}
-                <h3>Classification Results</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Label</th>
-                            <th>Confidence</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for key, value in result_data.items() %}
+        
+        <div style="text-align: center;">
+        <video width="640" height="360" controls>
+            <source id="video-play" src="{{video_url}}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        </div>
+
+
+        
+        <div class="progress-info" id="progress-info">
+            {% if processing_complete %}
+            <h3 id="operation-type-head">{% if operation_type == "classification" %}Classification Results{% else %}Translation Result{% endif %}</h3>
+            <p>Processed: <strong id="processingVideoName">{{ video_name }}</strong></p>
+            <p id="frameCountText">{{ frame_count }} frames analyzed.</p>
+            <div id="operation-type-conetent">
+                {% if operation_type == "classification" %}
+                    <table>
+                        <thead>
                             <tr>
-                                <td>{{ value[0] }}</td>
-                                <td>{{ '%.2f'|format(value[1] * 100) }}%</td>
+                                <th>Label</th>
+                                <th>Confidence</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for key, value in result_data.items() %}
+                                <tr>
+                                    <td>{{ value[0] }}</td>
+                                    <td>{{ '%.2f'|format(value[1] * 100) }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>{{ result_data.text }}</p>
+                {% endif %}
+            </div>
+                
             {% else %}
-                <h3>Translation Result</h3>
-                <p>{{ result_data.text }}</p>
+                <p>Processing: <strong id="processingVideoName"></strong></p>
+                <p id="frameCountText"></p>
             {% endif %}
     
             <!-- Upload Complete Section -->
@@ -125,6 +144,9 @@
         const processingVideoName = document.getElementById('processingVideoName');
         const frameCountText = document.getElementById('frameCountText');
         const newUploadBtn = document.getElementById('newUploadBtn');
+        const operationTypeHead = document.getElementById('operation-type-head');
+        const operationTypeConetent = document.getElementById('operation-type-conetent');
+        const videoPlay = document.getElementById('video-play');
         
         // New sections
         const uploadCompleteSection = document.getElementById('uploadCompleteSection');
@@ -226,6 +248,7 @@
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
+                        //document.getElementById('operation-type-head').innerHTML= `<h3>hello</h3><pre>${JSON.stringify(response, null, 2)}</pre>`;
                         startProcessing(response);
                     } else {
                         alert('Upload failed');
@@ -318,7 +341,71 @@
             resultsContainer.style.display = 'block';
             
             processingVideoName.textContent = data.video_name;
+            operationTypeHead.textContent = `${data.operation_type} Results`
+            //document.getElementById('operation-type-head').innerHTML += `<p>Operation: ${data.operation_type}</p>`;
             frameCountText.textContent = `${data.frame_count} frames extracted.`;
+
+            //operationTypeConetent
+            if (data.operation_type == 'classification') {
+                let tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Label</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                for (const key in data.result_data) {
+                    const value = data.result_data[key];
+                    const label = value[0];
+                    const confidence = (value[1] * 100).toFixed(2) + '%';
+                    tableHTML += `
+                        <tr>
+                            <td>${label}</td>
+                            <td>${confidence}</td>
+                        </tr>
+                    `;
+                }
+
+                tableHTML += `
+                        </tbody>
+                    </table>
+                `;
+
+                operationTypeConetent.innerHTML = tableHTML;
+
+            } else {
+                operationTypeConetent.innerHTML = `<p>${data.result_data.text}</p>`;
+            }
+            
+            videoPlay.src = data.video_url;
+
+            //operationTypeConetent.innerHTML +=`<h2>3</h2>`;
+
+                //             {% if operation_type == "classification" %}
+                //     <table>
+                //         <thead>
+                //             <tr>
+                //                 <th>Label</th>
+                //                 <th>Confidence</th>
+                //             </tr>
+                //         </thead>
+                //         <tbody>
+                //             {% for key, value in result_data.items() %}
+                //                 <tr>
+                //                     <td>{{ value[0] }}</td>
+                //                     <td>{{ '%.2f'|format(value[1] * 100) }}%</td>
+                //                 </tr>
+                //             {% endfor %}
+                //         </tbody>
+                //     </table>
+                // {% else %}
+                //     <p>{{ result_data.text }}</p>
+                // {% endif %}
+
 
             // Show keypoint extraction section after a short delay
             // setTimeout(() => {

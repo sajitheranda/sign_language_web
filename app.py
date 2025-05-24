@@ -61,14 +61,18 @@ def index():
 
         if file and allowed_file(file.filename):
             temp_dir = tempfile.mkdtemp(dir=app.config['TEMP_FOLDER'])
+            temp_subfolder = os.path.basename(temp_dir)
             filename = secure_filename(file.filename)
             video_path = os.path.join(temp_dir, filename)
+            video_url = url_for('static', filename=f'temp/{temp_subfolder}/{filename}')
             file.save(video_path)
+
+            
 
             # Process immediately after upload
             processing_data = {
                 'temp_dir': temp_dir,
-                'video_path': video_path,
+                'video_url': video_url,
                 'video_name': filename,
                 'operation_type' : operation_type
             }
@@ -105,7 +109,9 @@ def index():
             # torch.save(video_keypoints, 'filtered_keypoints.pt')
 
             video_keypoints = video_keypoints.tolist()[:40]
-
+            
+            result_data=""
+            
             if operation_type == "classification":
                 result_data =send_classification(video_keypoints)
             else:
@@ -120,7 +126,10 @@ def index():
             return jsonify({
                 'status': 'complete',
                 'video_name': filename,
-                'frame_count': len(frames)
+                'frame_count': len(frames),
+                'operation_type' : operation_type,
+                'result_data' : result_data,
+                'video_url': video_url,
             })
 
     # For GET requests or if processing is complete
@@ -128,12 +137,13 @@ def index():
         processing_data = session['processing_data']
         return render_template('index.html', 
                              processing_complete=True,
+                             video_url =processing_data['video_url'],
                              result_data = processing_data['result_data'],
                              operation_type=processing_data['operation_type'],
                              video_name=processing_data['video_name'],
                              frame_count=len(processing_data['frames']))
     
-    return render_template('index.html', processing_complete=False)
+    return render_template('index.html', processing_complete=False , result_data="")
 
 # @app.route('/processing')
 # def processing():
